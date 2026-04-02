@@ -20,8 +20,8 @@ msg_param = {
 
 # 请求体
 payload = {
-    "robotCode": "ding78qvob0ffowxxwtm",  # 替换为你的机器人Code
-    "userIds": ["4248573029996722", "user456"],  # 接收消息的用户ID列表
+    "robotCode": "ding78qvob0ffowxx1wtm",  # 替换为你的机器人Code
+    "userIds": ["42485730299961722", "user456"],  # 接收消息的用户ID列表
     "msgKey": msg_key,  # 消息类型Key，例如：sampleTextMsg（文本消息）
     "msgParam": json.dumps(msg_param)  # 消息参数，需转为JSON字符串
 }

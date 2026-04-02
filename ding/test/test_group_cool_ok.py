@@ -60,7 +60,7 @@ def send_group_message(
 # 使用示例
 if __name__ == "__main__":
     # 示例参数
-    ACCESS_TOKEN = "18d6c9d399d63c06913e82c147de841a"
+    ACCESS_TOKEN = "18d6c9d399d63c06913e82c147de841aq"
     # MSG_KEY = "sampleText"  # 文本消息类型
     # MSG_PARAM = {
     #     "content": "这是一条测试消息"
@@ -99,9 +99,9 @@ if __name__ == "__main__":
         "singleTitle": "查看详情",
         "singleURL": "https://open.dingtalk.com"
     }
-    OPEN_CONVERSATION_ID = "cidModuDcbZfghdH59n2/lnBw=="
-    ROBOT_CODE = "ding78qvob0ffowxxwtm"
-    COOL_APP_CODE = "COOLAPP-1-1037FC5BDBC721335DBD000W"
+    OPEN_CONVERSATION_ID = "cidModuDcbZfghdH592n2/lnBw=="
+    ROBOT_CODE = "ding78qvob0ffowxxw1tm"
+    COOL_APP_CODE = "COOLAPP-1-1037FC5BDBC721335DB1D000W"
     # 调用发送消息
     result = send_group_message(
         access_token=ACCESS_TOKEN,

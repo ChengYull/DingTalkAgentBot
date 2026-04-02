@@ -231,7 +231,7 @@ def main():
     APP_SECRET = bot_conf["client_secret"]  # 在钉钉开放平台 - 应用详情 获取
 
     # 用户的 staffId（在钉钉管理后台 - 通讯录 - 搜索用户 获取）
-    USER_ID = '4248573029996722'
+    USER_ID = '42485730299967212'
     AGENT_ID = bot_conf["agent_id"]  # 替换为你的 AgentId
     USER_ID_LIST = [USER_ID]  # 替换为接收者的 userId
 

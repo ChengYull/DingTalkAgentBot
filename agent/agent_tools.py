@@ -40,10 +40,6 @@ def send_private_message(user_id_list: list[str], msg_param: dict):
     from ding.robot_service import ding_bot_service
     return ding_bot_service.send_private_message(user_id_list, msg_param)
 
-@tool(description="获取用户信息")
-def get_user_info():
-    from ding.robot_service import ding_bot_service
-    return ding_bot_service.get_cur_user_info()
 
 @tool(description="获取最新手机相关新闻, 参数为新闻条数，默认为5条")
 def get_phone_news(max_news: int=5):
@@ -55,7 +51,7 @@ def get_timer_task_list():
     job_list = scheduler.list_jobs()
     return job_list
 
-@tool(description="添加定时任务")
+@tool(description="添加每日定时任务")
 def add_timer_task(cron_expr: str, job_id: str, name: str, timer_prompt: str):
     try:
         scheduler.add_cron_job(
@@ -72,6 +68,22 @@ def add_timer_task(cron_expr: str, job_id: str, name: str, timer_prompt: str):
         logger.error(f"[add_timer_task]添加定时任务发生错误{str(e)}")
         return f"添加定时任务：{name}发生错误:{str(e)}"
 
+@tool(description="添加一次性定时任务")
+def add_date_timer_task(run_date: str, job_id: str, name: str, timer_prompt: str):
+    try:
+        scheduler.add_date_job(
+            add_timer_prompt,
+            run_date=run_date,
+            job_id=job_id,
+            name=name,
+            kwargs={
+                "timer_prompt": timer_prompt
+            }
+        )
+        return f"成功添加定时任务：{name},执行时间：{run_date}, 指令：{timer_prompt}"
+    except Exception as e:
+        logger.error(f"[add_date_timer_task]添加定时任务发生错误{str(e)}")
+        return f"添加定时任务：{name}发生错误:{str(e)}"
 
 @tool(description="移除定时任务")
 def remove_timer_task(job_id: str):
@@ -81,3 +93,9 @@ def remove_timer_task(job_id: str):
     except Exception as e:
         logger.error(f"[remove_timer_task]移除定时任务{job_id}失败：{str(e)}")
         return f"移除定时任务{job_id}失败：{str(e)}"
+
+
+@tool(description="通过昵称搜索钉钉用户，并返回用户ID")
+def get_user_id_by_nick(nick_name: str):
+    from ding.robot_service import ding_bot_service
+    return ding_bot_service.get_user_id_by_nick(nick_name)

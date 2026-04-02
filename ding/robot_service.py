@@ -1,91 +1,14 @@
 import json
 
 from agent.main_agent import MainAgent, main_agent
-from ding.utils.message_utils import send_private_message_util
+from ding.utils.message_utils import send_private_message_util, send_group_message_util
+from ding.utils.user_utils import get_userid_by_name
 from utils.config_handler import bot_conf
-from typing import Dict, Any
 import time
-import hmac
-import hashlib
-import base64
-import urllib.parse
 import requests
-
 from utils.logger_handler import logger
-
-import logging
 from dingtalk_stream import AckMessage
 import dingtalk_stream
-
-
-def send_dingtalk_robot_message(access_token, secret, msg, at_user_ids=None, at_mobiles=None, is_at_all=False):
-    """
-    发送钉钉自定义机器人群消息
-
-    :param access_token: 机器人webhook的access_token
-    :param secret: 机器人安全设置的加签secret
-    :param msg: 消息内容
-    :param at_user_ids: @的用户ID列表，如 ["userid1", "userid2"] 或 "userid1,userid2"
-    :param at_mobiles: @的手机号列表，如 ["13800000000", "13900000000"] 或 "13800000000,13900000000"
-    :param is_at_all: 是否@所有人，默认False
-    :return: 钉钉API响应
-    """
-    # 处理参数格式
-    if at_user_ids and isinstance(at_user_ids, str):
-        at_user_ids = [u.strip() for u in at_user_ids.split(',') if u.strip()]
-    if at_mobiles and isinstance(at_mobiles, str):
-        at_mobiles = [m.strip() for m in at_mobiles.split(',') if m.strip()]
-
-    # 生成签名
-    timestamp = str(round(time.time() * 1000))
-    string_to_sign = f'{timestamp}\n{secret}'
-    hmac_code = hmac.new(secret.encode('utf-8'), string_to_sign.encode('utf-8'), digestmod=hashlib.sha256).digest()
-    sign = urllib.parse.quote_plus(base64.b64encode(hmac_code))
-
-    # 构建请求URL
-    url = f'https://oapi.dingtalk.com/robot/send?access_token={access_token}&timestamp={timestamp}&sign={sign}'
-    # 构建请求体
-    body = {
-        "at": {
-            "isAtAll": str(is_at_all).lower(),
-            "atUserIds": at_user_ids or [],
-            "atMobiles": at_mobiles or []
-        },
-
-        "markdown": {
-            "title": "title",
-            "text": msg
-        },
-        "msgtype": "markdown"
-    }
-
-    # 发送请求
-    headers = {'Content-Type': 'application/json'}
-    resp = requests.post(url, json=body, headers=headers)
-
-    return resp.json()
-
-current_user_info = {}
-
-class EchoTextHandler(dingtalk_stream.ChatbotHandler):
-    def __init__(self, mainAgent: MainAgent):
-        super(dingtalk_stream.ChatbotHandler, self).__init__()
-        self.agent = mainAgent
-
-    async def process(self, callback: dingtalk_stream.CallbackMessage):
-        incoming_message = dingtalk_stream.ChatbotMessage.from_dict(callback.data)
-        text = incoming_message.text.content.strip()
-        # 获取用户ID用于会话隔离
-        user_id = incoming_message.sender_id
-        current_user_info["user_id"] = user_id
-        current_user_info["user_nick"] = incoming_message.sender_nick
-        logger.info(f'[钉钉消息] 用户ID: {user_id}，会话id：{incoming_message.conversation_id}, 内容: {text}')
-        reply = await self.get_agent_reply(text, user_id=user_id)
-        self.reply_text(reply, incoming_message)
-        return AckMessage.STATUS_OK, 'OK'
-
-    async def get_agent_reply(self, query, user_id=None):
-        return self.agent.get_reply(query, user_id=user_id)
 
 class MyEventHandler(dingtalk_stream.EventHandler):
     async def process(self, event: dingtalk_stream.EventMessage):
@@ -96,7 +19,7 @@ class MyEventHandler(dingtalk_stream.EventHandler):
 
         return AckMessage.STATUS_OK, 'OK'
 
-class MyCallbackHandler(dingtalk_stream.CallbackHandler):
+class MyCallbackHandler(dingtalk_stream.ChatbotHandler):
     def __init__(self, agent: MainAgent):
         super(MyCallbackHandler, self).__init__()
         self.agent = agent
@@ -106,10 +29,12 @@ class MyCallbackHandler(dingtalk_stream.CallbackHandler):
         ## conversationId 会话id
         logger.info(f"[钉钉接收消息]-message.data- {message.data}")
         user_id = message.data.get("senderStaffId", None)
+        conversation_type = message.data.get("conversationType", None)
+        conversation_id = message.data.get("conversationId", None)
         input_msg = {
-            "conversation_type": message.data.get("conversationType"),
-            "conversation_id": message.data.get("conversationId"),
-            "user_id": message.data.get("senderStaffId"),
+            "conversation_type": conversation_type,
+            "conversation_id": conversation_id,
+            "user_id": user_id,
             "sender_nick": message.data.get("senderNick"),
             "text": message.data.get("text", {}).get("content", ""),
         }
@@ -197,29 +122,6 @@ class RobotService:
 
         return self._send_work_notice(body)
 
-    # def send_group_message(self, text, user_ids="", at_all=False):
-    #     # user_ids 可选的@参数
-    #     mobiles = ""  # 或 ["13800000000", "13900000000"]
-    #     try:
-    #         # 发送消息
-    #         result = send_dingtalk_robot_message(
-    #             access_token=self.access_token,
-    #             secret="",
-    #             msg=text,
-    #             at_user_ids=user_ids,  # 可省略
-    #             at_mobiles=mobiles,  # 可省略
-    #             is_at_all=at_all
-    #         )
-    #         logger.debug(f"[钉钉群组消息发送]：{text}")
-    #         logger.info(f"[钉钉群组消息发送] 结果：{result}")
-    #         return result
-    #     except Exception as e:
-    #         logger.error(f"[钉钉群组消息发送]发生错误：{str(e)}")
-    #         return {"msg": f"[钉钉群组消息发送]发生错误：{str(e)}"}
-
-    def get_cur_user_info(self):
-        return current_user_info
-
 
 
     def send_private_message(self, user_id_list, msg_param):
@@ -228,9 +130,17 @@ class RobotService:
         return res
 
     def send_group_message(self, conversation_id, msg_param):
-        res = send_private_message_util(self._get_access_token(), self.client_id, conversation_id, msg_param)
+        res = send_group_message_util(self._get_access_token(), self.client_id, conversation_id, msg_param)
         logger.info(f"[钉钉群聊消息发送] 消息：{msg_param} 结果：{res}")
-        return
+        return res
+
+    def get_user_id_by_nick(self, nick_name):
+        res = get_userid_by_name(self._get_access_token(), nick_name)
+        logger.info(f"[根据昵称获取用户ID] 昵称：{nick_name} 结果：{res}")
+        if res["code"] == 200 and res["data"]["list"]:
+            return res["data"]["list"][0]
+        else:
+            return f"未找到昵称为 {nick_name} 的用户, 结果：{res}"
 
     def run_bot_listen_server(self):
         client_id = self.client_id
@@ -254,7 +164,9 @@ ding_bot_service = RobotService()
 
 if __name__ == '__main__':
     # ding_bot_service.send_group_message("11")
-    ding_bot_service.run_bot_listen_server()
+    print(ding_bot_service._get_access_token())
+    print(ding_bot_service.get_user_id_by_nick("程渝"))
+    # ding_bot_service.run_bot_listen_server()
     # msg_param = {
     #     "msgKey": "sampleMarkdown",
     #     "msgParam": {

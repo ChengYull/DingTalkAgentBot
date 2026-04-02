@@ -5,9 +5,10 @@ from threading import Lock
 from model.model_factory import chat_model
 from utils.prompt_handler import load_system_prompt
 from agent.agent_tools import (read_str_file, generate_report,
-                               send_group_message, get_user_info,
+                               send_group_message, send_private_message,
                                get_phone_news, get_timer_task_list,
-                               add_timer_task, remove_timer_task, send_private_message)
+                               add_timer_task, remove_timer_task,
+                               add_date_timer_task, get_user_id_by_nick)
 from agent.common_tools import get_file_list, get_current_time
 from agent.agent_middleware import dynamic_prompt, log_befor_model, monitor_tool
 from langchain_community.tools.tavily_search import TavilySearchResults
@@ -27,12 +28,13 @@ class MainAgent:
                 get_current_time,
                 send_private_message,
                 send_group_message,
-                get_user_info,
                 tavily_tool,
                 get_phone_news,
                 get_timer_task_list,
                 add_timer_task,
-                remove_timer_task
+                remove_timer_task,
+                add_date_timer_task,
+                get_user_id_by_nick
             ]
         self.agent = create_agent(
             model=chat_model,

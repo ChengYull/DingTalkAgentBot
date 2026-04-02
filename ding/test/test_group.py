@@ -1,23 +1,25 @@
 import requests
 import json
 
+from utils.config_handler import bot_conf
+
 # 钉钉机器人API地址
 url = "https://api.dingtalk.com/v1.0/robot/groupMessages/send"
 
 # 请求头
 headers = {
     "Content-Type": "application/json",
-    "x-acs-dingtalk-access-token": "43219a0960db38e99ec46d5e0b1f904c"  # 替换为实际的access_token
+    "x-acs-dingtalk-access-token": "ff2898d4cf503dfd9c7844a48b397db23"  # 替换为实际的access_token
 }
 
 # 请求体
 data = {
     "msgParam": json.dumps({
-        "content": "这是一条测试消息22"
+        "content": "11"
     }),  # 消息参数，根据msgKey的不同格式会变化
     "msgKey": "sampleText",  # 消息模板Key，如：sampleText、sampleImageMsg等
-    "openConversationId": "cidISzpQt3AXRimkEM/vYGDiA==",  # 群会话ID
-    "robotCode": "ding78qvob0ffowxxwtm"  # 机器人编码
+    "openConversationId": "cidISzpQt3AXRimkEM/vYGDiA1==",  # 群会话ID
+    "robotCode": bot_conf["robotCode"]  # 机器人编码
 }
 
 # 发送请求
