@@ -37,6 +37,7 @@ def monitor_tool(
         cost = time.time() - start
 
         logger.info(f"[tool_monitor]工具{request.tool_call['name']}调用成功,耗时：{cost}")
+        logger.info(f"[tool_monitor]执行结果：{result}")
 
         return result
 

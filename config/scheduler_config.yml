@@ -12,7 +12,7 @@ jobs:
       #分钟 小时 天 月 星期
       expression: "30 10 * * *"  # 每天早上10执行
     kwargs:
-      timer_prompt: "获取今天的手机行业资讯，仅输出（当天）资讯，不要有额外的问候内容"
+      timer_prompt: '{"conversation_type": 2, "conversation_id": "cidISzpQt3AXRimkEM/vYGDiA==", "text": "获取今天的手机行业资讯，仅（当天）资讯，不要有额外的问候内容 "}'
 
   ### 下面为模版内容
   # 每日行业资讯推送

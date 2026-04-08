@@ -22,7 +22,8 @@ class ChatModelFactory(BaseModelFactory):
     def geterator(self) -> Optional[Embeddings | BaseChatModel]:
         model_root = model_conf["key_root"]
         if model_root == "bailian":
-            os.environ["OPEN_AI_KEY"] = model_conf["key"]["free"]
+            select_key = model_conf["select_key"]
+            os.environ["OPEN_AI_KEY"] = model_conf["key"][select_key]
             # print(os.environ["OPEN_AI_KEY"])
             return ChatTongyi(model=model_conf["chat_model"])
         elif model_root == "openai":
@@ -40,14 +41,16 @@ class ChatModelFactory(BaseModelFactory):
 class EmbedingsFactory(BaseModelFactory):
     def geterator(self) -> Optional[Embeddings | BaseChatModel]:
         if model_conf["key_root"] == "bailian":
-            os.environ["DASHSCOPE_API_KEY"] = model_conf["key"]["free"]
+            select_key = model_conf["select_key"]
+            os.environ["DASHSCOPE_API_KEY"] = model_conf["key"][select_key]
         else:
             return None
         return DashScopeEmbeddings(model=model_conf["embedding_model_name"])
 
 # 初始化 避免报错
-os.environ["OPEN_AI_KEY"] = model_conf["key"]["free"]
-os.environ["DASHSCOPE_API_KEY"] = model_conf["key"]["free"]
+select_key = model_conf["select_key"]
+os.environ["OPEN_AI_KEY"] = model_conf["key"][select_key]
+os.environ["DASHSCOPE_API_KEY"] = model_conf["key"][select_key]
 
 chat_model = ChatModelFactory().geterator()
 embedings_model = EmbedingsFactory().geterator()

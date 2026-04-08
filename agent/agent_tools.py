@@ -99,3 +99,8 @@ def remove_timer_task(job_id: str):
 def get_user_id_by_nick(nick_name: str):
     from ding.robot_service import ding_bot_service
     return ding_bot_service.get_user_id_by_nick(nick_name)
+
+@tool(description="获取完整聊天历史记录，参数为用户ID")
+def get_whole_chat_history(user_id: str):
+    from utils.memory_handler import load_memory_store
+    return load_memory_store(user_id, message_len=-1)
